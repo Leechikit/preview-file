@@ -1,6 +1,5 @@
 import axios from 'axios'
 import qs from 'qs'
-import { Message } from 'mint-ui'
 
 axios.defaults.timeout = 20000 // 响应时间
 axios.defaults.baseURL = '/ctg-workflow' // 配置接口地址
@@ -14,7 +13,6 @@ axios.interceptors.request.use((config) => {
   }
   return config
 }, (error) => {
-  Message.error('错误的传参', 'fail')
   return Promise.reject(error)
 })
 // 返回状态判断(添加响应拦截器)
