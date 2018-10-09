@@ -1,39 +1,67 @@
 <template>
   <div class="main">
-    <div @click="previewEvent()">Preview Button</div>
-    <preview ref="preview"></preview>
-    <!-- <iframe src='https://view.officeapps.live.com/op/view.aspx?src=https://leechikit.github.io/resources/ctg/测试.xlsx' width='100%' height='100%' frameborder='1'></iframe> -->
-    <!-- <div id="pdf"></div> -->
-    <!-- <a class="media" href="https://leechikit.github.io/resources/ctg/测试.pdf">PDF File</a> -->
-    <!-- <iframe src="https://leechikit.github.io/resources/ctg/测试.txt" frameborder="0"></iframe> -->
+    <div class="btn-list">
+      <div class="btn-item" @click="previewEvent('office')">Preview Office</div>
+      <div class="btn-item" @click="previewEvent('pdf')">Preview Pdf</div>
+      <div class="btn-item" @click="previewEvent('txt')">Preview Txt</div>
+    </div>
+    <preview :url="previewUrl"></preview>
   </div>
 </template>
 
 <script>
-// import { file } from '@/api/file'
 import preview from "@/components/preview";
 export default {
   name: "home",
   components: { preview },
-  mounted() {
-    // PDFObject.embed('./测试.pdf','#pdf')
-    // window.onload = function() {
-    //   $("a.media").media({ width: 500, height: 400 });
-    // };
-    // file("https://leechikit.github.io/resources/ctg/测试.txt").then(data => {
-    //   console.log(data);
-    // });
+  data() {
+    return {
+      previewUrl:''
+    }
   },
   methods: {
-    previewEvent() {
-      // this.$refs.preview.show("https://leechikit.github.io/resources/ctg/测试.xlsx");
-      this.$refs.preview.show("https://leechikit.github.io/resources/ctg/测试.pdf")
+    previewEvent(type) {
+      switch(type) {
+        case 'office':
+          this.previewUrl = "https://leechikit.github.io/resources/ctg/测试.xlsx"
+          break
+        case 'pdf':
+          this.previewUrl = "https://leechikit.github.io/resources/ctg/测试.pdf"
+          break
+        case 'txt':
+          this.previewUrl = "https://leechikit.github.io/resources/ctg/测试.txt"
+          break
+      }
     }
   }
 };
 </script>
 <style lang="scss" scoped>
 .main {
-  height: 500px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50px;
+  bottom: 50px;
+  margin: auto;
+  .btn-list{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+  }
+  .btn-item{
+    width: 200px;
+    height: 80px;
+    line-height: 80px;
+    font-size: 24px;
+    color: #fff;
+    background-color: #2d8cf0;
+    border-radius: 5px;
+    text-align: center;
+    cursor: pointer;
+  }
 }
 </style>

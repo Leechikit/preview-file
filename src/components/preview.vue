@@ -1,38 +1,50 @@
 <template>
   <div class="preview" v-if="type">
     <div class="preview-con">
-      <iframe v-if="type === 'office'" :src="`https://view.officeapps.live.com/op/view.aspx?src=${url}`" width='100%' height='100%' frameborder='1'></iframe>
+      <iframe 
+        v-if="type === 'office'"
+        :src="`https://view.officeapps.live.com/op/view.aspx?src=${url}`"
+        width='100%'
+        height='100%'
+      ></iframe>
       <pdf
-            v-if="type === 'pdf'"
-            v-for="i in numPages"
-            :key="i"
-            :src="url"
-            :page="i"
-        ></pdf>
+        v-if="type === 'pdf'"
+        v-for="i in numPages"
+        :key="i"
+        :src="url"
+        :page="i"
+      ></pdf>
+      <pre class="txt" v-text="content"></pre>
     </div>
     <div class="preview-delbtn" @click="closePreview">×</div>
   </div>
 </template>
 <script>
 import pdf from 'vue-pdf'
+import { file } from '@/api/file'
 export default {
   name: 'preview',
   components: {
     pdf
   },
-  data () {
-    return {
-      url: '',
-      type: null,
-      numPages: 0,
-      loadingTask: null
+  props: {
+    url: {
+      type: String,
+      default: ''
     }
   },
-  methods: {
-    // 初始化
-    show (url) {
-      this.type = this.getType(url)
-      this.url = url
+  data () {
+    return {
+      type: null,
+      numPages: 0,
+      loadingTask: null,
+      content: ''
+    }
+  },
+  watch: {
+    url(newVal, oldVal) {
+      this.type = this.getType(newVal)
+      this.url = newVal
       switch (this.type) {
         case 'office':
           this.previewOffice()
@@ -44,7 +56,9 @@ export default {
           this.previewTxt()
           break
       }
-    },
+    }
+  },
+  methods: {
     // 获取url后缀
     getExt (url) {
       const lastIndex = url.lastIndexOf('.')
@@ -89,7 +103,9 @@ export default {
     },
     // 预览 txt
     previewTxt () {
-
+      file(this.url).then(data => {
+        this.content = data;
+      });
     },
     // 关闭预览
     closePreview () {
@@ -129,6 +145,12 @@ export default {
     bottom: 30px;
     margin: auto;
     overflow-y: auto;
+    border: 2px solid #cccccc;
+    border-radius: 5px;
+    background-color: #fff;
+    iframe{
+      border: none;
+    }
   }
 }
 </style>
