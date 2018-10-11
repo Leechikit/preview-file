@@ -1,118 +1,147 @@
 <template>
-  <div class="preview" v-if="type">
-    <div class="preview-con">
-      <iframe 
-        v-if="type === 'office'"
-        :src="`https://view.officeapps.live.com/op/view.aspx?src=${url}`"
-        width='100%'
-        height='100%'
-      ></iframe>
-      <pdf
-        v-if="type === 'pdf'"
-        v-for="i in numPages"
-        :key="i"
-        :src="url"
-        :page="i"
-      ></pdf>
-      <pre class="txt" v-text="content"></pre>
+  <div class="preview" v-if="type" @click.self="closePreview">
+    <div class="preview-con" @click.self="closePreview">
+      <div class="preview-con-bg" v-if="type === 'office'">
+        <iframe 
+          :src="`https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(url)}`"
+          width='100%'
+          height='100%'
+        ></iframe>
+      </div>
+      <div class="preview-con-bg" v-if="type === 'pdf'">
+        <pdf
+          v-for="i in numPages"
+          :key="i"
+          :src="url"
+          :page="i"
+        ></pdf>
+      </div>
+      <div class="preview-con-bg" v-if="type === 'txt'">
+        <pre class="txt" v-text="content"></pre>
+      </div>
     </div>
-    <div class="preview-delbtn" @click="closePreview">×</div>
+    <img class="preview-img" v-if="type === 'image'" :src="url" alt="">
+    <!-- <div class="preview-delbtn" @click="closePreview">×</div> -->
   </div>
 </template>
 <script>
-import pdf from 'vue-pdf'
-import { file } from '@/api/file'
+import pdf from "vue-pdf";
+import { file } from "@/api/file";
 export default {
-  name: 'preview',
+  name: "preview",
   components: {
     pdf
   },
-  props: {
-    url: {
-      type: String,
-      default: ''
-    }
-  },
-  data () {
+  data() {
     return {
-      type: null,
+      url: "",
+      ext: "",
       numPages: 0,
       loadingTask: null,
-      content: ''
-    }
+      content: "",
+      loading: false
+    };
   },
-  watch: {
-    url(newVal, oldVal) {
-      this.type = this.getType(newVal)
-      this.url = newVal
-      switch (this.type) {
-        case 'office':
-          this.previewOffice()
-          break
-        case 'pdf':
-          this.previewPdf()
-          break
-        case 'txt':
-          this.previewTxt()
-          break
+  computed: {
+    type() {
+      let result = null;
+      if (this.isOfficeType(this.ext)) {
+        result = "office";
+      } else if (this.isPdfType(this.ext)) {
+        result = "pdf";
+      } else if (this.isTxtType(this.ext)) {
+        result = "txt";
+      } else if (this.isImageType(this.ext)) {
+        result = "image";
       }
+      return result;
     }
   },
   methods: {
-    // 获取url后缀
-    getExt (url) {
-      const lastIndex = url.lastIndexOf('.')
-      return url.substr(lastIndex + 1)
-    },
-    // 获取类型
-    getType (url) {
-      let result = null;
-      if (this.isOfficeType(url)) {
-        result = 'office'
-      }else if (this.isPdfType(url)) {
-        result = 'pdf'
-      }else if (this.isTxtType(url)) {
-        result = 'txt'
+    show({ url, ext }) {
+      this.url = url;
+      this.ext = ext;
+      switch (this.type) {
+        case "office":
+          this.previewOffice();
+          break;
+        case "pdf":
+          this.previewPdf();
+          break;
+        case "txt":
+          this.previewTxt();
+          break;
+        case "image":
+          // this.previewImage();
+          break;
       }
-      return result;
+    },
+    // 获取url后缀
+    getExt(url) {
+      const lastIndex = url.lastIndexOf(".");
+      return url.substr(lastIndex + 1);
     },
     // 是否 office
-    isOfficeType (url) {
-      const ext = this.getExt(url)
-      return ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].indexOf(ext.toLowerCase()) !== -1;
+    isOfficeType(url) {
+      const ext = this.getExt(url);
+      return (
+        ["doc", "docx", "xls", "xlsx", "ppt", "pptx"].indexOf(
+          ext.toLowerCase()
+        ) !== -1
+      );
     },
     // 是否 pdf
-    isPdfType (url) {
-      const ext = this.getExt(url)
-      return ['pdf'].indexOf(ext.toLowerCase()) !== -1;
+    isPdfType(url) {
+      const ext = this.getExt(url);
+      return ["pdf"].indexOf(ext.toLowerCase()) !== -1;
     },
     // 是否 txt
-    isTxtType (url) {
-      const ext = this.getExt(url)
-      return ['txt'].indexOf(ext.toLowerCase()) !== -1;
+    isTxtType(url) {
+      const ext = this.getExt(url);
+      return ["txt"].indexOf(ext.toLowerCase()) !== -1;
+    },
+    // 是否图片类型
+    isImageType(ext) {
+      return (
+        ["gif", "jpg", "jpeg", "png", "bmp"].indexOf(ext.toLowerCase()) !== -1
+      );
     },
     // 预览 doc、xls、ppt
-    previewOffice () {
-    },
+    previewOffice() {},
     // 预览 pdf
-    previewPdf () {
+    previewPdf() {
+      this.loading = true;
       const loadingTask = pdf.createLoadingTask(this.url);
       loadingTask.then(pdf => {
         this.numPages = pdf.numPages;
-      })
-    },
-    // 预览 txt
-    previewTxt () {
-      file(this.url).then(data => {
-        this.content = data;
+        this.loading = false;
       });
     },
+    // 预览 txt
+    previewTxt() {
+      this.loading = true;
+      file(this.url).then(data => {
+        this.content = data;
+        this.loading = false;
+      });
+    },
+    // 预览图片
+    previewImage() {
+      this.loading = true;
+      const image = new Image();
+      image.src = this.url;
+      image.onload = () => {
+        this.loading = false;
+      }
+    },
     // 关闭预览
-    closePreview () {
-      this.type = null;
+    closePreview() {
+      this.url = ""
+      this.ext = ""
+      this.content = ""
     }
   }
-}
+};
 </script>
 <style lang="scss" scoped>
 .preview {
@@ -123,34 +152,43 @@ export default {
   bottom: 0;
   margin: auto;
   background-color: rgba(#000, 0.8);
-  &-delbtn {
-    width: 25px;
-    height: 25px;
-    position: absolute;
-    right: 5px;
-    top: 5px;
-    background-color: #c0c0c0;
-    color: #000;
-    border-radius: 25px;
-    font-size: 25px;
-    text-align: center;
-    line-height: 25px;
-    cursor: pointer;
-  }
   &-con {
     position: absolute;
-    left: 30px;
-    top: 30px;
-    right: 30px;
-    bottom: 30px;
+    top: 20px;
+    bottom: 20px;
+    left: 0;
+    right: 0;
     margin: auto;
+    width: 800px;
     overflow-y: auto;
-    border: 2px solid #cccccc;
-    border-radius: 5px;
-    background-color: #fff;
-    iframe{
+    &-bg {
+      width: 100%;
+      height: 100%;
+      border: 2px solid #cccccc;
+      border-radius: 5px;
+      background-color: #fff;
+    }
+    iframe {
       border: none;
     }
+    pre {
+      width: 100%;
+      height: 100%;
+      padding: 10px;
+      margin: 0;
+      box-sizing: border-box;
+      background-color: transparent;
+      border: none;
+    }
+  }
+  &-img {
+    max-width: 800px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
   }
 }
 </style>
