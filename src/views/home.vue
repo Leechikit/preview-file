@@ -4,8 +4,9 @@
       <div class="btn-item" @click="previewEvent('office')">Preview Office</div>
       <div class="btn-item" @click="previewEvent('pdf')">Preview Pdf</div>
       <div class="btn-item" @click="previewEvent('txt')">Preview Txt</div>
+      <div class="btn-item" @click="previewEvent('image')">Preview Image</div>
     </div>
-    <preview :url="previewUrl"></preview>
+    <preview ref="preview" :url="previewUrl"></preview>
   </div>
 </template>
 
@@ -21,18 +22,31 @@ export default {
   },
   methods: {
     previewEvent(type) {
+      let url = "";
       switch(type) {
         case 'office':
-          this.previewUrl = "https://leechikit.github.io/resources/ctg/测试.xlsx"
+          url = "https://leechikit.github.io/resources/ctg/测试.xlsx"
           break
         case 'pdf':
-          this.previewUrl = "https://leechikit.github.io/resources/ctg/测试.pdf"
+          url = "https://leechikit.github.io/resources/ctg/测试.pdf"
           break
         case 'txt':
-          this.previewUrl = "https://leechikit.github.io/resources/ctg/测试.txt"
+          url = "https://leechikit.github.io/resources/ctg/测试.txt"
+          break
+        case 'image':
+          url = "https://leechikit.github.io/resources/ctg/测试.jpg"
           break
       }
-    }
+      this.$refs.preview.show({
+        url,
+        ext: this.getExt(url)
+      })
+    },
+    // 获取url后缀
+    getExt(url) {
+      const lastIndex = url.lastIndexOf(".");
+      return url.substr(lastIndex + 1);
+    },
   }
 };
 </script>
