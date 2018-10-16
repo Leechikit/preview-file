@@ -12,7 +12,7 @@
         <pdf
           v-for="i in numPages"
           :key="i"
-          :src="url"
+          :src="pdfTask"
           :page="i"
         ></pdf>
       </div>
@@ -37,7 +37,7 @@ export default {
       url: "",
       ext: "",
       numPages: 0,
-      loadingTask: null,
+      pdfTask: null,
       content: "",
       loading: false
     };
@@ -111,8 +111,9 @@ export default {
     // 预览 pdf
     previewPdf() {
       this.loading = true;
-      const loadingTask = pdf.createLoadingTask(this.url);
-      loadingTask.then(pdf => {
+      this.pdfTask = pdf.createLoadingTask(this.url);
+      this.pdfTask.then(pdf => {
+        console.log(pdf)
         this.numPages = pdf.numPages;
         this.loading = false;
       });
